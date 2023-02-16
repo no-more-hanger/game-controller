@@ -52,6 +52,7 @@ void loop() {
   // move left
   if (analogRead(JOY_X) == ANALOG_MAX) {
     Keyboard.press(KEY_LEFT_ARROW);
+    Serial.println("Left");
   } else {
     Keyboard.release(KEY_LEFT_ARROW);
   }
@@ -59,6 +60,7 @@ void loop() {
   // move right
   if (analogRead(JOY_X) == 0) {
     Keyboard.press(KEY_RIGHT_ARROW);
+    Serial.println("Right");
   } else {
     Keyboard.release(KEY_RIGHT_ARROW);
   }
@@ -66,6 +68,8 @@ void loop() {
   // move up
   if (analogRead(JOY_Y) == ANALOG_MAX) {
     Keyboard.press(KEY_UP_ARROW);
+    Serial.println("Up");
+
   } else {
     Keyboard.release(KEY_UP_ARROW);
   }
@@ -73,6 +77,8 @@ void loop() {
   // move down
   if (analogRead(JOY_Y) == 0) {
     Keyboard.press(KEY_DOWN_ARROW);
+    Serial.println("Down");
+
   } else {
     Keyboard.release(KEY_DOWN_ARROW);
   }
