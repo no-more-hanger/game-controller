@@ -164,7 +164,7 @@ void calculateRPM() {
     return;
   }
 
-  int rpm = rotation_cnt * RPM_STD * 1000 / (current_timestamp - prev_rpm_timestamp);
+  int rpm = (int)(rotation_cnt * RPM_STD * 1000.0 / ((float)(current_timestamp - prev_rpm_timestamp)));
   rotation_cnt = 0;
   prev_rpm_timestamp = current_timestamp;
 #ifdef DEBUG
