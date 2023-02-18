@@ -8,7 +8,7 @@
 #define BTN_B 2
 #define PEDAL 7
 
-#define ANALOG_MAX 1023
+#define ANALOG_MAX 1020
 
 // pedal
 #define RPM_STD 60
@@ -95,7 +95,7 @@ void readButtons() {
 
 void readJoyStick() {
   // move left
-  if (analogRead(JOY_X) == ANALOG_MAX) {
+  if (analogRead(JOY_X) >= ANALOG_MAX) {
     Keyboard.press(KEY_LEFT_ARROW);
 #ifdef DEBUG
     Serial.println("Left");
