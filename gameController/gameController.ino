@@ -115,7 +115,7 @@ void readJoyStick() {
   }
 
   // move up
-  if (analogRead(JOY_Y) == ANALOG_MAX) {
+  if (analogRead(JOY_Y) >= ANALOG_MAX) {
     Keyboard.press(KEY_UP_ARROW);
 #ifdef DEBUG
     Serial.println("Up");
