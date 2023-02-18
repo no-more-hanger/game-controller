@@ -15,10 +15,12 @@
 #define MIN_CNT_INTERVAL 50  // 회전 최소 주기
 
 // KEY CODE
-#define ASCII_ZERO 48     // 0 ~ 9 단계
-#define ASCII_C 67        // 10 ~ 33 단계
+#define ASCII_ZERO 48  // 0 ~ 9 단계
+#define ASCII_C 67     // 10 ~ 33 단계
+
 #define MAX_LEVEL 33      // 최대 속도 레벨
 #define LEVEL_INTERVAL 3  // (임시) 속도 레벨 간 간격
+#define AVG_NUM 5
 
 #define DEBUG  // comment on production
 
@@ -29,6 +31,7 @@ bool flag_pedal;
 
 // pedal sensor - time value [ms]
 unsigned long prev_timestamp;  //직전 회전한 시간
+int rpm;
 
 void setup() {
 #ifdef DEBUG
@@ -51,6 +54,7 @@ void setup() {
   flag_pedal = false;
 
   prev_timestamp = millis();
+  rpm = 0;
 
   // attach interrupt for push button
   attachInterrupt(digitalPinToInterrupt(BTN_A), onPushA, FALLING);
@@ -141,13 +145,22 @@ void readPedal() {
   if (!flag_pedal && pedal == LOW) {
     prev_timestamp = current_timestamp;  // timestamp 갱신
 
-    int rpm = (int)(RPM_STD * 1000.0 / interval);
+    int temp = (int)(RPM_STD * 1000.0 / interval);
     flag_pedal = true;
+
+    if (rpm == 0) {
+      rpm = temp;
+    } else {
+      // 직전 rpm 값 이용해서 보정
+      rpm = (rpm * (AVG_NUM - 1) + temp) / AVG_NUM;
+    }
     RPMToKeyCode(rpm);
 
 #ifdef DEBUG
     Serial.print("\t interval: ");
     Serial.print(interval);
+    Serial.print("\t temp: ");
+    Serial.print(temp);
     Serial.print("\t rpm: ");
     Serial.print(rpm);
 #endif
