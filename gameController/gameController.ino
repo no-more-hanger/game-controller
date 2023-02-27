@@ -8,18 +8,19 @@
 #define BTN_B 2
 #define PEDAL 7
 
-#define ANALOG_MAX 1023
+#define ANALOG_MAX 1020
 
 // pedal
 #define RPM_STD 60
-#define MIN_CNT_INTERVAL 50    // 회전 최소 주기
-#define MIN_RPM_INTERVAL 5000  // RPM 계산 최소 주기
+#define MIN_CNT_INTERVAL 50  // 회전 최소 주기
 
 // KEY CODE
-#define ASCII_ZERO 48      // 0 ~ 9 단계
-#define ASCII_C 67         // 10 ~ 33 단계
-#define MAX_LEVEL 33       // 최대 속도 레벨
-#define LEVEL_INTERVAL 10  // (임시) 속도 레벨 간 간격
+#define ASCII_ZERO 48  // 0 ~ 9 단계
+#define ASCII_C 67     // 10 ~ 33 단계
+
+#define MAX_LEVEL 33      // 최대 속도 레벨
+#define LEVEL_INTERVAL 4  // (임시) 속도 레벨 간 간격
+#define AVG_NUM 5
 
 #define DEBUG  // comment on production
 
@@ -28,12 +29,9 @@ volatile bool flag_A;
 volatile bool flag_B;
 bool flag_pedal;
 
-// pedal
-int rotation_cnt;  // 회전수
-
 // pedal sensor - time value [ms]
-unsigned long prev_cnt_timestamp;  //직전 회전한 시간
-unsigned long prev_rpm_timestamp;  //직전 계산한 시간
+unsigned long prev_timestamp;  //직전 회전한 시간
+int rpm;
 
 void setup() {
 #ifdef DEBUG
@@ -55,10 +53,8 @@ void setup() {
   flag_B = false;
   flag_pedal = false;
 
-  prev_cnt_timestamp = millis();
-  prev_rpm_timestamp = prev_cnt_timestamp;
-
-  rotation_cnt = 0;
+  prev_timestamp = millis();
+  rpm = 0;
 
   // attach interrupt for push button
   attachInterrupt(digitalPinToInterrupt(BTN_A), onPushA, FALLING);
@@ -95,7 +91,7 @@ void readButtons() {
 
 void readJoyStick() {
   // move left
-  if (analogRead(JOY_X) == ANALOG_MAX) {
+  if (analogRead(JOY_X) >= ANALOG_MAX) {
     Keyboard.press(KEY_LEFT_ARROW);
 #ifdef DEBUG
     Serial.println("Left");
@@ -115,7 +111,7 @@ void readJoyStick() {
   }
 
   // move up
-  if (analogRead(JOY_Y) == ANALOG_MAX) {
+  if (analogRead(JOY_Y) >= ANALOG_MAX) {
     Keyboard.press(KEY_UP_ARROW);
 #ifdef DEBUG
     Serial.println("Up");
@@ -141,41 +137,40 @@ void readPedal() {
   unsigned long current_timestamp = millis();
   bool pedal = digitalRead(PEDAL);
 
-  if (current_timestamp - prev_cnt_timestamp < MIN_CNT_INTERVAL) {
+  int interval = (int)(current_timestamp - prev_timestamp);
+  if (interval < MIN_CNT_INTERVAL) {
     return;
   }
-  prev_cnt_timestamp = current_timestamp;
 
   if (!flag_pedal && pedal == LOW) {
+    prev_timestamp = current_timestamp;  // timestamp 갱신
+
+    int temp = (int)(RPM_STD * 1000.0 / interval);
     flag_pedal = true;
-    rotation_cnt++;
+
+    if (rpm == 0) {
+      rpm = temp;
+    } else {
+      // 직전 rpm 값 이용해서 보정
+      rpm = (rpm + temp * (AVG_NUM - 1)) / AVG_NUM;
+    }
+    RPMToKeyCode(rpm);
+
 #ifdef DEBUG
-    Serial.print("\t rotation_cnt: ");
-    Serial.print(rotation_cnt);
+    Serial.print("\t interval: ");
+    Serial.print(interval);
+    Serial.print("\t temp: ");
+    Serial.print(temp);
+    Serial.print("\t rpm: ");
+    Serial.print(rpm);
 #endif
   } else if (pedal == HIGH) {
     flag_pedal = false;
   }
 }
 
-void calculateRPM() {
-  unsigned long current_timestamp = millis();
-  if (current_timestamp - prev_rpm_timestamp < MIN_RPM_INTERVAL) {
-    return;
-  }
-
-  int rpm = (int)(rotation_cnt * RPM_STD * 1000.0 / ((float)(current_timestamp - prev_rpm_timestamp)));
-  rotation_cnt = 0;
-  prev_rpm_timestamp = current_timestamp;
-#ifdef DEBUG
-  Serial.print("\t rpm: ");
-  Serial.print(rpm);
-#endif
-  RPMToKeyCode(rpm);
-}
-
 void RPMToKeyCode(int rpm) {
-  if (rpm == 0) {  // 정지 상태
+  if (rpm <= 0) {  // 정지 상태
     return;
   }
 
@@ -209,7 +204,4 @@ void loop() {
 
   // check pedal
   readPedal();
-
-  // calculate rpm
-  calculateRPM();
 }
