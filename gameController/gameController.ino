@@ -19,7 +19,7 @@
 #define ASCII_C 67     // 10 ~ 33 단계
 
 #define MAX_LEVEL 33      // 최대 속도 레벨
-#define LEVEL_INTERVAL 3  // (임시) 속도 레벨 간 간격
+#define LEVEL_INTERVAL 4  // (임시) 속도 레벨 간 간격
 #define AVG_NUM 5
 
 #define DEBUG  // comment on production
