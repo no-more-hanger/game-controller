@@ -152,7 +152,7 @@ void readPedal() {
       rpm = temp;
     } else {
       // 직전 rpm 값 이용해서 보정
-      rpm = (rpm * (AVG_NUM - 1) + temp) / AVG_NUM;
+      rpm = (rpm + temp * (AVG_NUM - 1)) / AVG_NUM;
     }
     RPMToKeyCode(rpm);
 
