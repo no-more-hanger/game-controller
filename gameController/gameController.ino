@@ -142,7 +142,7 @@ void readPedal() {
     int temp = (int)(RPM_STD * 1000.0 / interval);
     flag_pedal = true;
 
-    if (rpm == 0) {
+    if (rpm <= 30) {
       rpm = temp;
     } else {
       // 직전 rpm 값 이용해서 보정
