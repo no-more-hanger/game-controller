@@ -22,7 +22,7 @@
 #define LEVEL_INTERVAL 4  // (임시) 속도 레벨 간 간격
 #define AVG_NUM 5
 
-#define DEBUG  // comment on production
+// #define DEBUG  // comment on production
 
 // interrupt flag
 volatile bool flag_A;
@@ -55,37 +55,31 @@ void setup() {
 
   prev_timestamp = millis();
   rpm = 0;
-
-  // attach interrupt for push button
-  attachInterrupt(digitalPinToInterrupt(BTN_A), onPushA, FALLING);
-  attachInterrupt(digitalPinToInterrupt(BTN_B), onPushB, FALLING);
-}
-
-// interrupt routine
-void onPushA() {
-  flag_A = true;
-}
-
-void onPushB() {
-  flag_B = true;
 }
 
 void readButtons() {
-  if (flag_A) {
-    flag_A = false;
+  bool btn_A = digitalRead(BTN_A);
+  if (!flag_A && !btn_A) {
+    flag_A = true;
     Keyboard.write('A');
 
 #ifdef DEBUG
     Serial.println("A");
 #endif
+  } else if (btn_A) {
+    flag_A = false;
   }
-  if (flag_B) {
-    flag_B = false;
+
+  bool btn_B = digitalRead(BTN_B);
+  if (!flag_B && !btn_B) {
+    flag_B = true;
     Keyboard.write('B');
 
 #ifdef DEBUG
     Serial.println("B");
 #endif
+  } else if (btn_B) {
+    flag_B = false;
   }
 }
 
