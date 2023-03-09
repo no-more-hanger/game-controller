@@ -12,7 +12,7 @@
 
 // pedal
 #define RPM_STD 60
-#define MIN_CNT_INTERVAL 50  // 회전 최소 주기
+#define MIN_CNT_INTERVAL 20  // 회전 최소 주기
 
 // KEY CODE
 #define ASCII_ZERO 48  // 0 ~ 9 단계
